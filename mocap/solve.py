@@ -695,7 +695,7 @@ def main():
     sync["before"] = {k: v for k, v in before.items() if k != "per_frame_gap_px"}
     sync["paw_agreement"] = paws
     sync["front_shift_frames"] = None if shift is None else shift.round(2).tolist()
-fhw = float(sys.argv[sys.argv.index("--front-height-weight") + 1]) if "--front-height-weight" in sys.argv else 0.25
+    fhw = float(sys.argv[sys.argv.index("--front-height-weight") + 1]) if "--front-height-weight" in sys.argv else 0.25
     res = fit(d, info, iters=iters, dev=dev, fps=float(raw["fps"]),
               plant="--no-plant" not in sys.argv, front_height_weight=fhw,
               far_side_weight=float(sys.argv[sys.argv.index("--far-side-weight") + 1]) if "--far-side-weight" in sys.argv else 1.0,
@@ -707,7 +707,7 @@ fhw = float(sys.argv[sys.argv.index("--front-height-weight") + 1]) if "--front-h
     motion = {"fps": float(raw["fps"]), "bones": res["bones"], "trans": res["trans"].round(5).tolist(),
               "root_quat": to_quat(res["root_rotmat"]).round(6).tolist(), "euler": res["euler"].round(5).tolist(),
               "joints": res["joints"].round(4).tolist(), "joint_names": res["joint_names"],
-"reproj_px": res["reproj_px"], "reproj_confident_px": res["reproj_confident_px"], "sync": sync, "swaps": swapped, "swap_suspect_frames": suspect,
+              "reproj_px": res["reproj_px"], "reproj_confident_px": res["reproj_confident_px"], "sync": sync, "swaps": swapped, "swap_suspect_frames": suspect,
               "contacts": res["contacts"], "calib_converged": calib_converged}
     json.dump(motion, open(out, "w"))
     print("saved", out)
