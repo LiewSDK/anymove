@@ -110,10 +110,28 @@ HF11_JOBS = [
     ("pounce", VIDEOS / "pounce" / "s1" / "h3-hyperflow-hf11-pounce.mp4", "h3-hyperflow-hf11-pounce", False, "HyperFlow"),
 ]
 
+#: The 2026-11-14 filming session. Same twelve-clip design as HF11: the base
+#: half is the control and the HyperFlow half is the challenger, and both are
+#: filmed on ONE day so the read and the wall clock are comparable - which is
+#: the whole reason HF14 exists as a set of its own rather than a re-read of
+#: HF11. The HyperFlow half had not been filmed when this set was added, so
+#: the reader prints SKIP for it until the driver films it: a clip that is
+#: not there yet is reported, not silently dropped from the table.
+HF14_JOBS = [
+    ("shake", VIDEOS / "shake" / "s1" / "h3-base-hf14-shake.mp4", "h3-base-hf14-shake", False, "base H3"),
+    ("shake", VIDEOS / "shake" / "s1" / "h3-hyperflow-hf14-shake.mp4", "h3-hyperflow-hf14-shake", False, "HyperFlow"),
+    ("gallop", VIDEOS / "gallop" / "s1" / "h3-base-hf14-gallop.mp4", "h3-base-hf14-gallop", False, "base H3"),
+    ("gallop", VIDEOS / "gallop" / "s1" / "h3-hyperflow-hf14-gallop.mp4", "h3-hyperflow-hf14-gallop", False, "HyperFlow"),
+    ("howl", VIDEOS / "howl" / "s1" / "h3-base-hf14-howl.mp4", "h3-base-hf14-howl", False, "base H3"),
+    ("howl", VIDEOS / "howl" / "s1" / "h3-hyperflow-hf14-howl.mp4", "h3-hyperflow-hf14-howl", False, "HyperFlow"),
+    ("pounce", VIDEOS / "pounce" / "s1" / "h3-base-hf14-pounce.mp4", "h3-base-hf14-pounce", False, "base H3"),
+    ("pounce", VIDEOS / "pounce" / "s1" / "h3-hyperflow-hf14-pounce.mp4", "h3-hyperflow-hf14-pounce", False, "HyperFlow"),
+]
+
 #: Which set to read. "published" is the three-day set the docs quote;
 #: "today" is the one-day controlled re-film of the same twelve clips.
 SETS = {"published": lambda: PUBLISHED_JOBS, "today": lambda: TODAY_JOBS,
-        "hf11": lambda: HF11_JOBS}
+        "hf11": lambda: HF11_JOBS, "hf14": lambda: HF14_JOBS}
 
 
 def run(cmd: list[str], label: str) -> int:
@@ -160,7 +178,16 @@ def main() -> int:
     wanted = {k.strip() for k in args.only.split(",") if k.strip()}
     jobs = SETS[args.set]()
     if args.engine.strip():
-        jobs = [j for j in jobs if j[4] == args.engine.strip()]
+        # The engine label is the whole label ("base H3", "base+VBVR"), so the
+        # filter matches the label itself OR its first word ("base", "HyperFlow").
+        # Matching on a bare substring would let "base" also drag in "base+VBVR",
+        # which is a different engine.
+        needle = args.engine.strip().lower()
+        jobs = [j for j in jobs
+                if needle in (j[4].lower(), j[4].lower().split()[0])]
+        if not jobs:
+            print(f"no clip of engine {args.engine!r} in set {args.set!r}",
+                  file=sys.stderr)
 
     results = []
     for key, clip, name, single, _engine in jobs:
